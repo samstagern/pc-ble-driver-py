@@ -34,14 +34,25 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-import Queue
+
+ Python 2 and 3:
+# To make Py2 code safer (more like Py3) by preventing
+# implicit relative imports, you can also add this to the top:
+from __future__ import absolute_import
+
+import sys
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
+
 import logging
 import wrapt
 from threading  import Condition, Lock
-from ble_driver import *
-from exceptions import NordicSemiException
+from .ble_driver import *
+from .exceptions import NordicSemiException
 
-from observers import *
+from .observers import *
 
 logger  = logging.getLogger(__name__)
 
@@ -193,7 +204,7 @@ class BLEAdapter(BLEDriverObserver):
                 response = self.evt_sync[conn_handle].wait(evt = BLEEvtID.gattc_evt_char_disc_rsp)
 
                 if response['status'] == BLEGattStatusCode.success:
-                    map(s.char_add, response['characteristics'])
+                    list(map(s.char_add, response['characteristics']))
                 elif response['status'] == BLEGattStatusCode.attribute_not_found:
                     break
                 else:

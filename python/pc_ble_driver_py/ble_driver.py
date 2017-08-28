@@ -34,6 +34,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+
+# Python 2 and 3:
+# To make Py2 code safer (more like Py3) by preventing
+# implicit relative imports, you can also add this to the top:
+from __future__ import absolute_import
+
+# support long
+# Python 2 and 3: option 1
+# subclass of long on Py2
+from builtins import int
+
 import re
 import time
 import wrapt
@@ -52,14 +63,14 @@ import platform
 import imp
 import importlib
 
-from observers import *
+from .observers import *
 
 #logging.basicConfig(level=logging.DEBUG)
 logger  = logging.getLogger(__name__)
 
 driver = None
 
-import config
+from . import config
 nrf_sd_ble_api_ver = config.sd_api_ver_get()
 # Load pc_ble_driver
 SWIG_MODULE_NAME = "pc_ble_driver_sd_api_v{}".format(nrf_sd_ble_api_ver)
@@ -110,8 +121,8 @@ logger.info('Swig module name: {}'.format(SWIG_MODULE_NAME))
 sys.path.append(shlib_dir)
 driver = importlib.import_module(SWIG_MODULE_NAME)
 
-import ble_driver_types as util
-from exceptions import NordicSemiException
+from . import ble_driver_types as util
+from .exceptions import NordicSemiException
 
 ATT_MTU_DEFAULT                 = driver.GATT_MTU_SIZE_DEFAULT
 
@@ -666,7 +677,8 @@ class BLEHci(Enum):
 class BLEUUIDBase(object):
     def __init__(self, vs_uuid_base=None, uuid_type=None):
         assert isinstance(vs_uuid_base, (list, NoneType)), 'Invalid argument type'
-        assert isinstance(uuid_type, (int, long, NoneType)), 'Invalid argument type'
+         # int now matches both int and long on Py2 (due to import)
+        assert isinstance(uuid_type, (int, NoneType)), 'Invalid argument type'
         if (vs_uuid_base is None) and uuid_type is None:
             self.base   = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00,
                            0x80, 0x00, 0x00, 0x80, 0x5F, 0x9B, 0x34, 0xFB]
@@ -961,7 +973,7 @@ class BLEDriver(object):
         dlen = driver.uint32_value(arr_len)
 
         descs   = util.serial_port_desc_array_to_list(c_desc_arr, dlen)
-        return map(SerialPortDescriptor.from_c, descs)
+        return list(map(SerialPortDescriptor.from_c, descs))
 
 
     @NordicSemiErrorCheck

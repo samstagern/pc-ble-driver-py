@@ -37,7 +37,15 @@
 
 import sys
 import time
-import Queue
+
+if sys.version[0] == '2':
+    import Queue as queue
+else:
+    import queue as queue
+
+# Python 2 and 3:
+from builtins import input, range
+
 import logging
 
 from pc_ble_driver_py.observers     import *
@@ -58,7 +66,7 @@ class HRCollector(BLEDriverObserver, BLEAdapterObserver):
     def __init__(self, adapter):
         super(HRCollector, self).__init__()
         self.adapter    = adapter
-        self.conn_q     = Queue.Queue()
+        self.conn_q     = queue.Queue()
         self.adapter.observer_register(self)
         self.adapter.driver.observer_register(self)
 
@@ -147,7 +155,7 @@ def main(serial_port):
     adapter   = BLEAdapter(driver)
     collector = HRCollector(adapter)
     collector.open()
-    for i in xrange(CONNECTIONS):
+    for i in range(CONNECTIONS):
         conn_handle = collector.connect_and_discover()
 
     time.sleep(30)
@@ -162,7 +170,7 @@ def item_choose(item_list):
 
     while True:
         try:
-            choice = int(raw_input('Enter your choice: '))
+            choice = int(input('Enter your choice: '))
             if ((choice >= 0) and (choice < len(item_list))):
                 break
         except Exception:

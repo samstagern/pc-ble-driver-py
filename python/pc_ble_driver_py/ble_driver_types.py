@@ -34,17 +34,21 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+# Python 2 and 3:
+# To make Py2 code safer (more like Py3) by preventing
+# implicit relative imports, you can also add this to the top:
+from __future__ import absolute_import
 
 import importlib
 
-import config
+from . import config
 nrf_sd_ble_api_ver = config.sd_api_ver_get()
 # Load pc_ble_driver
 SWIG_MODULE_NAME = "pc_ble_driver_sd_api_v{}".format(nrf_sd_ble_api_ver)
 try:
     ble_driver = importlib.import_module(SWIG_MODULE_NAME)
 except Exception:
-    print "Error. No ble_driver module found."
+    print("Error. No ble_driver module found.")
 
 
 UNIT_0_625_MS = 625  # Unit used for scanning and advertising parameters
